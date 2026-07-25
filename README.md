@@ -93,8 +93,3 @@ prior and only learns a correction.
   SSM-EKF is 10% *worse* on closed-loop cross-track — the sharpest mismatch instance.
 - **Ablations:** removing selectivity or mask-awareness barely changes open-loop RMSE but is
   catastrophic closed-loop (cross-track 2.3–3.3 m) — invisible to off-loop metrics, fatal in the loop.
-
-## Demo video
-
-See `report/demo_storyboard.md` for the narrated 5–7 minute demo script and shot list
-(figures and trajectory animation frames are in `figures/` and `report/`).
