@@ -1,13 +1,14 @@
 # Selective State-Space Observers for Estimate-Driven Robot Control Under Intermittent Sensing
 
-A differential-drive robot tracks a figure-eight reference using pure-pursuit control, estimating
-its pose from noisy odometry and *intermittent* range–bearing landmark measurements. We compare
-classical (dead reckoning, EKF) and learned recurrent-residual observers (GRU and a selective,
-Mamba-style diagonal state-space cell) **inside the control loop**, and ask the central question:
+A differential-drive robot tracks a figure-eight with pure-pursuit control, estimating its pose from
+noisy odometry and *intermittent* range–bearing landmark measurements. We compare classical (dead
+reckoning, EKF) and learned recurrent-residual observers (GRU, and a selective Mamba-style
+state-space cell) **inside the control loop**. Estimators are normally chosen by open-loop accuracy
+(RMSE), but they're actually used to *steer* — so we ask whether accuracy predicts driving:
+**does open-loop estimation RMSE predict closed-loop tracking performance?** (Mostly not reliably —
+the best-RMSE observer is the wrong controller in 29% of conditions.)
 
-> **Does open-loop estimation accuracy (RMSE) predict closed-loop tracking performance?**
-
-<img width="620" height="600" alt="demo_trajectory" src="https://github.com/user-attachments/assets/221cc7a5-1f44-4ccd-8714-3e1a6b274a9d" />
+<img width="320" height="300" alt="demo_trajectory" src="https://github.com/user-attachments/assets/221cc7a5-1f44-4ccd-8714-3e1a6b274a9d" />
 
 ## Install
 
