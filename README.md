@@ -1,7 +1,5 @@
 # Selective State-Space Observers for Estimate-Driven Robot Control Under Intermittent Sensing
 
-**ECE 6562 final project — Dharini Raghavan (`draghavan7`), Georgia Tech.**
-
 A differential-drive robot tracks a figure-eight reference using pure-pursuit control, estimating
 its pose from noisy odometry and *intermittent* range–bearing landmark measurements. We compare
 classical (dead reckoning, EKF) and learned recurrent-residual observers (GRU and a selective,
@@ -9,15 +7,6 @@ Mamba-style diagonal state-space cell) **inside the control loop**, and ask the 
 
 > **Does open-loop estimation accuracy (RMSE) predict closed-loop tracking performance?**
 
-Short answer: only directionally. Rankings agree on average (Spearman ρ = 0.89) but the *winner*
-under open-loop RMSE is the wrong controller in **29% of conditions**, and our best-estimating
-learned observer fails to improve control under compound stress — objective mismatch
-(Lambert et al., L4DC 2020) in state estimation.
-
-## No datasets required
-
-Everything is **pure simulation** — the world, sensors, faults, and training data are all
-synthetic. There is nothing to download. This is what makes the study exactly reproducible.
 
 ## Install
 
@@ -89,7 +78,7 @@ reproduce.sh            # one-command pipeline
 Each learned observer's readout is initialized near zero, so it *starts* equal to its analytic
 prior and only learns a correction.
 
-## Key results (10 seeds; see `report/paper.pdf` for full tables and figures)
+## Key results
 
 - **EKF is a strong baseline** (nominal closed-loop cross-track 0.21 m, zero divergence).
 - **Dead-reckoning-residual learned observers** estimate well open-loop (0.28–0.33 m, 4–5× better
