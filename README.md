@@ -7,6 +7,7 @@ Mamba-style diagonal state-space cell) **inside the control loop**, and ask the 
 
 > **Does open-loop estimation accuracy (RMSE) predict closed-loop tracking performance?**
 
+<img width="620" height="600" alt="demo_trajectory" src="https://github.com/user-attachments/assets/221cc7a5-1f44-4ccd-8714-3e1a6b274a9d" />
 
 ## Install
 
