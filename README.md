@@ -1,10 +1,6 @@
 # Closed-Loop Evaluation of Learned Robot State Observers
 
-This repository is a substantially strengthened and audited version of the original
-**Selective State-Space Observers for Estimate-Driven Robot Control Under Intermittent Sensing** project.
-
-The central contribution is now an **evaluation protocol and benchmark**, not a claim that a compact
-selective SSM is universally superior. It asks a deployment-relevant question:
+The central contribution isan **evaluation protocol and benchmark**. It asks a deployment-relevant question:
 
 > When an observer is selected from logged replay data, does that choice remain optimal after the observer is placed inside a feedback loop?
 
