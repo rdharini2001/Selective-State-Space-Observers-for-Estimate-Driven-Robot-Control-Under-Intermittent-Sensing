@@ -21,7 +21,7 @@ The package contains:
 - a zero-shot learned-observer stress test on an eight-landmark MRCLAM subset;
 - a maintained PyTorch training backend, tests, paper source, figures, and result JSON files.
 
-## Main audited findings
+## Main findings
 
 1. **Replay RMSE is useful but incomplete.** Across six observers and 24 conditions,
    open-loop position RMSE has global Spearman correlation 0.923 with closed-loop cross-track RMSE,
@@ -58,9 +58,9 @@ export PYTHONPATH=src            # Windows PowerShell: $env:PYTHONPATH="src"
 The default training backend is PyTorch. Existing NumPy checkpoints can be evaluated without
 `autograd`; this fixes compatibility problems in the original repository on modern Python/NumPy.
 
-## Reproduce the strengthened study
+## Reproduce the experiments and results
 
-### Fast verification using bundled checkpoints/results
+### Fast verification using bundled checkpoints
 
 ```bash
 pytest
@@ -123,15 +123,3 @@ paper/                      NeurIPS workshop manuscript and compiled PDF
 docs/                       audit, experiment card, and revision guidance
 tests/                      regression tests
 ```
-
-## What this paper should and should not claim
-
-**Supported:** replay metrics can preserve broad rankings while failing at top-1 observer selection;
-physics anchoring is consistently valuable; selectivity is regime-dependent; single-seed conclusions
-are fragile under harder sensing; the current ordered landmark representation transfers poorly.
-
-**Not supported:** selectivity or mask awareness is universally necessary; the compact cell is a full
-Mamba architecture; the MRCLAM-calibrated replay is a hardware closed-loop experiment; any tested
-offline metric has replaced actual closed-loop evaluation.
-
-See `docs/SCIENTIFIC_AUDIT.md` and `docs/PAPER_REVISION_GUIDE.md` before changing claims.
