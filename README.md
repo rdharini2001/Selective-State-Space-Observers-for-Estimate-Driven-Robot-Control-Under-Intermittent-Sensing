@@ -1,121 +1,132 @@
-# Closed-Loop Evaluation of Learned Robot State Observers
+# ECE 6562 Final Project
 
-The central contribution isan **evaluation protocol and benchmark**. It asks a deployment-relevant question:
+## Closed-Loop Evaluation of Robot State Observers Under Intermittent Sensing
 
-> When an observer is selected from logged replay data, does that choice remain optimal after the observer is placed inside a feedback loop?
+**Student:** Dharini Raghavan (`draghavan7`)  
+**Course:** ECE 6562 - Autonomous Control of Robotic Systems, Summer 2026
 
-The package contains:
+This project studies a practical model-selection question: an observer may estimate a robot pose accurately on a fixed log, but will it still give the best trajectory tracking after its estimate is placed inside a feedback controller?
 
-- six principal classical/learned observers evaluated across 24 sensing degradations;
-- corrected top-1 model-selection and regret analysis including GRU-EKF;
-- four offline selection proxies, including local controller-sensitivity error;
-- matched EKF-anchor selectivity and mask ablations;
-- three training-initialization seeds for SSM-EKF;
-- a matched pure-pursuit/Kanayama secondary-controller sensitivity;
-- physical-log localization on UTIAS MRCLAM Robot 1;
-- MRCLAM-calibrated closed-loop replay using physical sensor residuals and observation timing;
-- a zero-shot learned-observer stress test on an eight-landmark MRCLAM subset;
-- a maintained PyTorch training backend, tests, paper source, figures, and result JSON files.
+A differential-drive robot tracks a figure-eight path using pure-pursuit control. The robot receives biased wheel odometry and intermittent range-bearing measurements to known landmarks. Six observers are compared:
 
-## Main findings
+1. dead reckoning;
+2. an extended Kalman filter (EKF);
+3. a GRU residual on dead reckoning;
+4. a selective state-space residual on dead reckoning;
+5. a GRU residual on the EKF; and
+6. a selective state-space residual on the EKF.
 
-1. **Replay RMSE is useful but incomplete.** Across six observers and 24 conditions,
-   open-loop position RMSE has global Spearman correlation 0.923 with closed-loop cross-track RMSE,
-   but selects the wrong top observer in 5/24 conditions (20.8%).
-2. **Controller awareness is not automatically sufficient.** Exact command disagreement and a
-   counterfactual error replay perform worse than pose RMSE as top-1 selectors. A local
-   controller-sensitivity score reduces the observed failures to 3/24, but its bootstrap interval
-   overlaps no improvement and its worst regret is larger. The defensible result is therefore that
-   no tested log-only scalar replaces closed-loop evaluation.
-3. **The original selectivity claim was confounded.** With the same EKF anchor, nominal cross-track
-   RMSE is 0.199 m (selective), 0.203 m (non-selective), and 0.195 m (mask-free). Selectivity helps
-   under high gyro bias but hurts under long blackouts and two-landmark sensing. The analytic anchor,
-   rather than selectivity alone, is the dominant stabilizing factor.
-4. **Training seed matters under stress.** Across three SSM-EKF initializations, nominal means span
-   only 0.189-0.199 m, while long-blackout means span 0.231-0.336 m.
-5. **Observer selection is controller-dependent.** In a matched five-seed sensitivity, switching from
-   pure pursuit to Kanayama changes the closed-loop oracle in 8/24 conditions. Replay RMSE misselects
-   the Kanayama observer in 7/24 conditions, with maximum regret 0.092 m. The paired seed-bootstrap
-   interval for the oracle-change fraction is wide (0.208-0.625), so this is a secondary result.
-6. **Real-data transfer remains unsolved.** On 600 s of UTIAS MRCLAM Robot 1 data, the best simple
-   15-landmark EKF obtains 1.357 m position RMSE versus 3.392 m for dead reckoning. Zero-shot learned
-   checkpoints on an eight-landmark subset reach 2.60-2.62 m but have worse heading error, exposing
-   the map/slot-specific representation as a major limitation rather than hiding it.
+The main experiments vary blackout duration, range noise, landmark availability, and gyroscope bias. Every condition is evaluated with common random seeds in both open-loop replay and closed-loop control. The repository also contains matched ablations, training-seed checks, a second-controller sensitivity study, and a physical-log extension using UTIAS MRCLAM.
+
+## Main result
+
+Replay position RMSE is a useful screening metric, but it is not a complete deployment criterion. Across six observers and 24 operating conditions, it has a global Spearman correlation of 0.923 with closed-loop cross-track RMSE, yet it selects a different closed-loop winner in 5 of 24 conditions. The strongest and most consistent design choice is the analytic EKF anchor; the benefit of selectivity depends on the sensing regime.
+
+## Submission contents
+
+```text
+report/
+  ECE6562_Final_Project_Report.pdf   final course report
+  ECE6562_Final_Project_Report.tex   report source
+  references.bib                    bibliography
+
+demo/
+  nominal_tracking.mp4              nominal simulation clip
+  blackout_tracking.mp4             long-blackout simulation clip
+  demo_trajectory.gif               short looping preview
+  VIDEO_SCRIPT.md                   exact 5-7 minute narration and visuals
+
+src/ssm_obs/                        simulation, observers, controllers, metrics
+scripts/                            training, evaluation, plotting, and checks
+tests/                              regression tests
+results/reference/                  audited results used in the report
+results/models/                     bundled observer checkpoints
+figures/                            report-ready figures
+```
 
 ## Installation
 
+Python 3.10-3.12 is recommended.
+
 ```bash
 python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
+source .venv/bin/activate                 # Windows: .venv\Scripts\activate
+python -m pip install --upgrade pip
 pip install -r requirements.txt
-export PYTHONPATH=src            # Windows PowerShell: $env:PYTHONPATH="src"
 ```
 
-The default training backend is PyTorch. Existing NumPy checkpoints can be evaluated without
-`autograd`; this fixes compatibility problems in the original repository on modern Python/NumPy.
+## One-command verification
 
-## Reproduce the experiments and results
-
-### Fast verification using bundled checkpoints
+The following command runs the tests, performs a fresh closed-loop smoke experiment, verifies every reported result file, checks the report and video assets, and prints a submission summary:
 
 ```bash
-pytest
-python scripts/run_proxy_analysis.py --seeds 10 --bootstrap 3000
-python scripts/run_matched_ablation.py
-python scripts/run_ssm_training_seed_eval.py
-# Optional, slower matched-controller sensitivity:
-python scripts/run_second_controller.py --seeds 5
-python scripts/make_enhanced_figures.py
+bash reproduce.sh
 ```
 
-### Physical-log experiment
+This is the command the grader should use first. It normally finishes in under two minutes because the trained checkpoints and audited result files are included.
+
+## Full experimental reproduction
+
+To rerun the complete simulation study from the bundled checkpoints:
+
+```bash
+bash reproduce.sh --full
+```
+
+This command reruns the nominal experiment, all four degradation sweeps, the corrected observer-selection analysis, matched ablations, training-seed evaluation, figures, and demo clips. Runtime depends on the machine.
+
+To retrain all recurrent observers before evaluation:
+
+```bash
+bash reproduce.sh --train --full
+```
+
+## Useful individual commands
+
+```bash
+# Unit and regression tests
+pytest -q
+
+# Fresh nominal and degradation evaluation
+PYTHONPATH=src NSEED=10 python scripts/run_eval.py all
+
+# Corrected six-observer selection analysis
+PYTHONPATH=src python scripts/run_proxy_analysis.py --seeds 10 --bootstrap 3000
+
+# Same-anchor selectivity and measurement-mask ablations
+PYTHONPATH=src python scripts/run_matched_ablation.py
+
+# Three independently trained SSM-EKF checkpoints
+PYTHONPATH=src python scripts/run_ssm_training_seed_eval.py
+
+# Secondary Kanayama-controller sensitivity
+PYTHONPATH=src python scripts/run_second_controller.py --seeds 5
+
+# Regenerate video clips
+PYTHONPATH=src python scripts/make_demo_assets.py
+```
+
+## Physical-log extension
+
+The raw UTIAS MRCLAM data are not redistributed. Download and evaluate Robot 1 with:
 
 ```bash
 python scripts/download_mrclam.py --output data/external/MRCLAM_Dataset1 --robots 1
-python scripts/run_mrclam.py \
+PYTHONPATH=src python scripts/run_mrclam.py \
   --data-dir data/external/MRCLAM_Dataset1 \
   --robot 1 --duration 600 --seeds 12 --replay-steps 800
 ```
 
-The raw-log section uses real odometry, range-bearing measurements, and Vicon ground truth.
-The closed-loop section is explicitly a **real-noise-calibrated simulation**: dynamics are simulated,
-while sensor residuals and observation timing are resampled from the physical log.
+The raw-log experiment uses physical odometry, physical range-bearing observations, and Vicon ground truth. The separate empirical-noise replay uses simulated robot dynamics with noise and observation timing sampled from the physical log; it is not described as a hardware closed-loop experiment.
 
-### Train models
+## Reproducibility notes
 
-```bash
-python scripts/run_train.py --backend torch
-```
+- All simulation seeds are fixed and recorded in the scripts.
+- The same random seed and active-landmark subset are used when observers are compared within a condition.
+- Confidence intervals in the main study are computed across ten evaluation seeds.
+- Bundled JSON files preserve aggregate and, where needed, seed-level results.
+- The report distinguishes original simulation results, secondary sensitivity analyses, and the physical-log extension.
 
-To retrain selected models:
+## Known limitations
 
-```bash
-python scripts/run_train.py --backend torch --force ssm_ekf gru_ekf
-```
-
-## Repository layout
-
-```text
-src/ssm_obs/
-  controller_metrics.py     task-aware offline metrics and selection regret
-  mrclam.py                 physical-log loader and empirical-noise replay
-  torch_train.py            maintained PyTorch trainer, legacy checkpoint export
-  controllers.py            closed-loop and time-indexed offline controllers
-  dynamics.py, sim.py       unicycle simulation and intermittent sensing
-  ekf.py                    dead reckoning and EKF
-  models.py, nn_core.py     recurrent residual observers and NumPy inference
-  experiments.py            observer specifications and degradation conditions
-scripts/
-  run_proxy_analysis.py     corrected six-observer proxy/regret study
-  run_matched_ablation.py   same-anchor selectivity/mask study
-  run_ssm_training_seed_eval.py
-  run_second_controller.py  matched pure-pursuit/Kanayama sensitivity
-  run_mrclam.py             real logs + real-noise-calibrated replay
-  download_mrclam.py
-  make_enhanced_figures.py
-results/enhanced/           seed-level and aggregate JSON results
-figures/enhanced/           new publication figures
-paper/                      NeurIPS workshop manuscript and compiled PDF
-docs/                       audit, experiment card, and revision guidance
-tests/                      regression tests
-```
+The robot and map are simulated in the main experiment, the recurrent models use a fixed ordered landmark representation, and only three training initializations were available for the SSM-EKF robustness study. The second-controller study uses five evaluation seeds and is reported as a sensitivity analysis rather than a definitive result. These limitations are discussed in the report.
